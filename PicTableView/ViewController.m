@@ -16,14 +16,13 @@
 @interface ViewController ()
 
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
-@property (strong, nonatomic) ImageDetailViewController *detailViewController;
 
 @end
 
 @implementation ViewController
 
 static NSString *CellIdentifier = @"CellIdentifier";
-NSMutableArray *picUrl;
+NSMutableArray *picUrlsArray;
 
 - (void)viewDidLoad
 {
@@ -35,14 +34,14 @@ NSMutableArray *picUrl;
 	[PXRequest requestForSearchTerm:[searchTerms objectAtIndex:arc4random() % 4] page:1 resultsPerPage:25 completion:^(NSDictionary *results, NSError *error) {
 		if(results)
 		{
-			picUrl = [[NSMutableArray alloc] init];
+			picUrlsArray = [[NSMutableArray alloc] init];
 			
 			NSArray *photos = [results valueForKey:@"photos"];
 			
 			for(NSArray *photo in photos)
 			{
 				NSLog(@"PXR Results: %@", [[photo valueForKey:@"image_url"] objectAtIndex:0]);
-				[picUrl addObject:[photo valueForKey:@"image_url"]];
+				[picUrlsArray addObject:[photo valueForKey:@"image_url"]];
 			}
 			[self.tableView reloadData];
 		}
@@ -51,43 +50,6 @@ NSMutableArray *picUrl;
 			NSLog(@"PXRequest Error: %@", error);
 		}
 	}];
-	
-	
-	/*
-	[PXRequest requestForSearchTag:@"clouds" page:1 resultsPerPage:3 completion:^(NSDictionary *results, NSError *error) {
-		if(results)
-		{
-			NSArray *photos = [results valueForKey:@"photos"];
-			
-			for(NSArray *photo in photos)
-			{
-				NSLog(@"new");
-				NSLog(@"PXR Results: %@", photo);
-			}
-		}
-		if(error)
-		{
-			NSLog(@"PXRequest Error: %@", error);
-		}
-	}];
-	
-	
-	[PXRequest requestForSearchTerm:@"street"
-                          searchTag:@"urban"
-                          searchGeo:@"40.7144,-74.006,50000km"
-                               page:1
-                     resultsPerPage:60
-                         photoSizes:PXPhotoModelSizeLarge
-                             except:PXPhotoModelCategoryUncategorized
-                         completion:^(NSDictionary *results, NSError *error) {
-							 [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
-							 if (results) {
-								 [self setNewObjects:[results valueForKey:@"photos"]];
-								 self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Log in" style:UIBarButtonItemStyleBordered target:self action:@selector(login)];
-							 }
-						 }];
-	 */
-
 }
 
 - (void)didReceiveMemoryWarning
@@ -107,11 +69,9 @@ NSMutableArray *picUrl;
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     CustomCell *cell = (CustomCell *)[tableView dequeueReusableCellWithIdentifier:CellIdentifier forIndexPath:indexPath];
 	
-//	cell.customLabel.text = [NSString stringWithFormat:@"%i",indexPath.row];
 	NSURL *tempUrl;
-	
-	if(picUrl){
-		tempUrl = [[picUrl objectAtIndex:indexPath.row] objectAtIndex:0];
+	if(picUrlsArray){
+		tempUrl = [[picUrlsArray objectAtIndex:indexPath.row] objectAtIndex:0];
 		[cell.thumbPic setImageWithURL:tempUrl];
 	}
 	
@@ -119,8 +79,6 @@ NSMutableArray *picUrl;
 	cell.thumbPic.layer.masksToBounds = YES;
 	
 	[cell setDidTapButtonBlock:^(id sender) {
-//        NSLog(@"Cell Tapped: %@", [NSString stringWithFormat:@"%i",indexPath.row]);
-		
 		ImageDetailViewController *idvc = [[ImageDetailViewController alloc] init];
 		[idvc.view setBackgroundColor:[UIColor whiteColor]];
 		idvc.picURL = tempUrl;
